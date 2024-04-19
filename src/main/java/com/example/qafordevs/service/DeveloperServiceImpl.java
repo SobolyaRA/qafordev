@@ -14,16 +14,18 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class DeveloperServiceImpl implements DeveloperService{
+public class DeveloperServiceImpl implements DeveloperService {
 
     private final DeveloperRepository developerRepository;
+
     @Override
     public DeveloperEntity saveDeveloper(DeveloperEntity developer) {
         DeveloperEntity duplicateCandidate = developerRepository.findByEmail(developer.getEmail());
 
-        if(Objects.nonNull(duplicateCandidate)){
-            throw new DeveloperWithDuplicateException("Developer with defined e,ail is already exist");
+        if (Objects.nonNull(duplicateCandidate)) {
+            throw new DeveloperWithDuplicateException("Developer with defined email is already exists");
         }
+        developer.setStatus(Status.ACTIVE);
         return developerRepository.save(developer);
     }
 
@@ -31,7 +33,7 @@ public class DeveloperServiceImpl implements DeveloperService{
     public DeveloperEntity updateDeveloper(DeveloperEntity developer) {
         boolean isExists = developerRepository.existsById(developer.getId());
 
-        if(!isExists){
+        if (!isExists) {
             throw new DeveloperNotFoundException("Developer not found");
         }
         return developerRepository.save(developer);
@@ -47,8 +49,8 @@ public class DeveloperServiceImpl implements DeveloperService{
     public DeveloperEntity getDeveloperByEmail(String email) {
         DeveloperEntity obtainedDeveloper = developerRepository.findByEmail(email);
 
-        if (Objects.isNull(obtainedDeveloper)){
-             throw new DeveloperNotFoundException("Developer not found");
+        if (Objects.isNull(obtainedDeveloper)) {
+            throw new DeveloperNotFoundException("Developer not found");
         }
         return obtainedDeveloper;
     }
@@ -57,7 +59,7 @@ public class DeveloperServiceImpl implements DeveloperService{
     public List<DeveloperEntity> getAllDevelopers() {
         return developerRepository.findAll()
                 .stream().filter(d -> {
-                        return d.getStatus().equals(Status.ACTIVE);
+                    return d.getStatus().equals(Status.ACTIVE);
                 })
                 .collect(Collectors.toList());
     }

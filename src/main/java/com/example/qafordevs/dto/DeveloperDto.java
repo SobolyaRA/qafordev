@@ -3,8 +3,6 @@ package com.example.qafordevs.dto;
 import com.example.qafordevs.entity.DeveloperEntity;
 import com.example.qafordevs.entity.Status;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -30,6 +28,7 @@ public class DeveloperDto {
                 .firstName(firstName)
                 .lastName(lastName)
                 .specialty(specialty)
+                .email(email)
                 .status(status)
                 .build();
     }
@@ -39,6 +38,7 @@ public class DeveloperDto {
                 .id(developer.getId())
                 .firstName(developer.getFirstName())
                 .lastName(developer.getLastName())
+                .email(developer.getEmail())
                 .specialty(developer.getSpecialty())
                 .status(developer.getStatus())
                 .build();

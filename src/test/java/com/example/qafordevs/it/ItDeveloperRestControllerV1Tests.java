@@ -1,33 +1,34 @@
-package com.example.qafordevs.rest;
+package com.example.qafordevs.it;
 
 import com.example.qafordevs.dto.DeveloperDto;
 import com.example.qafordevs.entity.DeveloperEntity;
-import com.example.qafordevs.exception.DeveloperNotFoundException;
-import com.example.qafordevs.exception.DeveloperWithDuplicateException;
-import com.example.qafordevs.service.DeveloperService;
+import com.example.qafordevs.entity.Status;
+import com.example.qafordevs.repository.DeveloperRepository;
 import com.example.qafordevs.util.DataUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.hamcrest.CoreMatchers;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.BDDMockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 
-@WebMvcTest
-public class DeveloperRestControllerV1Tests {
+@ActiveProfiles("test")
+@AutoConfigureMockMvc
+@Testcontainers
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+public class ItDeveloperRestControllerV1Tests extends AbstractRestControllerBaseTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -35,17 +36,19 @@ public class DeveloperRestControllerV1Tests {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @MockBean
-    private DeveloperService developerService;
+    @Autowired
+    private DeveloperRepository developerRepository;
+
+    @BeforeEach
+    public void setUp() {
+        developerRepository.deleteAll();
+    }
 
     @Test
     @DisplayName("Test create developer functionality")
     public void givenDeveloperDto_whenCreateDeveloper_thenSuccessResponse() throws Exception {
         //given
         DeveloperDto dto = DataUtils.getJohnDoeDtoTransient();
-        DeveloperEntity entity = DataUtils.getJohnDoePersisted();
-        BDDMockito.given(developerService.saveDeveloper(any(DeveloperEntity.class)))
-                .willReturn(entity);
         //when
         ResultActions result = mockMvc.perform(post("/api/v1/developers")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -64,9 +67,12 @@ public class DeveloperRestControllerV1Tests {
     @DisplayName("Test create developer with duplicate email functionality")
     public void givenDeveloperDtoWithDuplicateEmail_whenCreateDeveloper_thenErrorResponse() throws Exception {
         //given
+        String duplicateEmail = "duplicate@mail.com";
+        DeveloperEntity developer = DataUtils.getJohnDoeTransient();
+        developer.setEmail(duplicateEmail);
+        developerRepository.save(developer);
         DeveloperDto dto = DataUtils.getJohnDoeDtoTransient();
-        BDDMockito.given(developerService.saveDeveloper(any(DeveloperEntity.class)))
-                .willThrow(new DeveloperWithDuplicateException("Developer with defined email is already exists"));
+        dto.setEmail(duplicateEmail);
         //when
         ResultActions result = mockMvc.perform(post("/api/v1/developers")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -83,10 +89,12 @@ public class DeveloperRestControllerV1Tests {
     @DisplayName("Test update developer functionality")
     public void givenDeveloperDto_whenUpdateDeveloper_thenSuccessResponse() throws Exception {
         //given
+        String updatedEmail = "duplicate@mail.com";
+        DeveloperEntity entity = DataUtils.getJohnDoeTransient();
+        developerRepository.save(entity);
         DeveloperDto dto = DataUtils.getJohnDoeDtoPersisted();
-        DeveloperEntity entity = DataUtils.getJohnDoePersisted();
-        BDDMockito.given(developerService.updateDeveloper(any(DeveloperEntity.class)))
-                .willReturn(entity);
+        dto.setId(entity.getId());
+        dto.setEmail(updatedEmail);
         //when
         ResultActions result = mockMvc.perform(put("/api/v1/developers")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -98,16 +106,15 @@ public class DeveloperRestControllerV1Tests {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.id", CoreMatchers.notNullValue()))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.firstName", CoreMatchers.is("John")))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.lastName", CoreMatchers.is("Doe")))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.email", CoreMatchers.is(updatedEmail)))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.status", CoreMatchers.is("ACTIVE")));
     }
 
     @Test
-    @DisplayName("Test create developer with incorrect id")
+    @DisplayName("Test update developer with incorrect id")
     public void givenDeveloperDtoWithIncorrectId_whenUpdateDeveloper_thenErrorResponse() throws Exception {
         //given
-        DeveloperDto dto = DataUtils.getJohnDoeDtoTransient();
-        BDDMockito.given(developerService.updateDeveloper(any(DeveloperEntity.class)))
-                .willThrow(new DeveloperNotFoundException("Developer not found"));
+        DeveloperDto dto = DataUtils.getJohnDoeDtoPersisted();
         //when
         ResultActions result = mockMvc.perform(put("/api/v1/developers")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -124,10 +131,10 @@ public class DeveloperRestControllerV1Tests {
     @DisplayName("Test get developer by id functionality")
     public void givenId_whenGetById_thenSuccessResponse() throws Exception {
         //given
-        BDDMockito.given(developerService.getDeveloperById(anyInt()))
-                .willReturn(DataUtils.getJohnDoePersisted());
+        DeveloperEntity developer = DataUtils.getJohnDoeTransient();
+        developerRepository.save(developer);
         //when
-        ResultActions result = mockMvc.perform(get("/api/v1/developers/1")
+        ResultActions result = mockMvc.perform(get("/api/v1/developers/" + developer.getId())
                 .contentType(MediaType.APPLICATION_JSON));
         //then
         result
@@ -143,8 +150,6 @@ public class DeveloperRestControllerV1Tests {
     @DisplayName("Test get developer by incorrect id functionality")
     public void givenIncorrectId_whenGetById_thenErrorResponse() throws Exception {
         //given
-        BDDMockito.given(developerService.getDeveloperById(anyInt()))
-                .willThrow(new DeveloperNotFoundException("Developer not found"));
         //when
         ResultActions result = mockMvc.perform(get("/api/v1/developers/1")
                 .contentType(MediaType.APPLICATION_JSON));
@@ -160,12 +165,15 @@ public class DeveloperRestControllerV1Tests {
     @DisplayName("Test soft delete by id functionality")
     public void givenId_whenSoftDelete_thenSuccessResponse() throws Exception {
         //given
-        BDDMockito.doNothing().when(developerService).softDeleteById(anyInt());
+        DeveloperEntity developer = DataUtils.getJohnDoeTransient();
+        developerRepository.save(developer);
         //when
-        ResultActions result = mockMvc.perform(delete("/api/v1/developers/1")
+        ResultActions result = mockMvc.perform(delete("/api/v1/developers/" + developer.getId())
                 .contentType(MediaType.APPLICATION_JSON));
         //then
-        verify(developerService, times(1)).softDeleteById(anyInt());
+        DeveloperEntity obtainedDeveloper = developerRepository.findById(developer.getId()).orElse(null);
+        assertThat(obtainedDeveloper).isNotNull();
+        assertThat(obtainedDeveloper.getStatus()).isEqualTo(Status.DELETED);
         result
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(MockMvcResultMatchers.status().isOk());
@@ -175,28 +183,30 @@ public class DeveloperRestControllerV1Tests {
     @DisplayName("Test soft delete by incorrect id functionality")
     public void givenIncorrectId_whenSoftDelete_thenErrorResponse() throws Exception {
         //given
-        BDDMockito.doThrow(new DeveloperNotFoundException("Developer not found"))
-                .when(developerService).softDeleteById(anyInt());
+
         //when
         ResultActions result = mockMvc.perform(delete("/api/v1/developers/1")
                 .contentType(MediaType.APPLICATION_JSON));
         //then
-        verify(developerService, times(1)).softDeleteById(anyInt());
         result
                 .andDo(MockMvcResultHandlers.print())
-                .andExpect(MockMvcResultMatchers.status().isBadRequest());
+                .andExpect(MockMvcResultMatchers.status().isBadRequest())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.status", CoreMatchers.is(400)))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.message", CoreMatchers.is("Developer not found")));
     }
 
     @Test
     @DisplayName("Test hard delete by id functionality")
     public void givenId_whenHardDelete_thenSuccessResponse() throws Exception {
         //given
-        BDDMockito.doNothing().when(developerService).hardDeleteById(anyInt());
+        DeveloperEntity developer = DataUtils.getJohnDoeTransient();
+        developerRepository.save(developer);
         //when
-        ResultActions result = mockMvc.perform(delete("/api/v1/developers/1?isHard=true")
+        ResultActions result = mockMvc.perform(delete("/api/v1/developers/" + developer.getId() + "?isHard=true")
                 .contentType(MediaType.APPLICATION_JSON));
         //then
-        verify(developerService, times(1)).hardDeleteById(anyInt());
+        DeveloperEntity obtainedDeveloper = developerRepository.findById(developer.getId()).orElse(null);
+        assertThat(obtainedDeveloper).isNull();
         result
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(MockMvcResultMatchers.status().isOk());
@@ -206,15 +216,15 @@ public class DeveloperRestControllerV1Tests {
     @DisplayName("Test hard delete by incorrect id functionality")
     public void givenIncorrectId_whenHardDelete_thenErrorResponse() throws Exception {
         //given
-        BDDMockito.doThrow(new DeveloperNotFoundException("Developer not found"))
-                .when(developerService).hardDeleteById(anyInt());
         //when
         ResultActions result = mockMvc.perform(delete("/api/v1/developers/1?isHard=true")
                 .contentType(MediaType.APPLICATION_JSON));
         //then
-        verify(developerService, times(1)).hardDeleteById(anyInt());
         result
                 .andDo(MockMvcResultHandlers.print())
-                .andExpect(MockMvcResultMatchers.status().isBadRequest());
+                .andExpect(MockMvcResultMatchers.status().isBadRequest())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.status", CoreMatchers.is(400)))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.message", CoreMatchers.is("Developer not found")));
     }
+
 }

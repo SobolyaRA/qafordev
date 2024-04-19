@@ -1,7 +1,6 @@
 package com.example.qafordevs.repository;
 
 import com.example.qafordevs.entity.DeveloperEntity;
-import com.example.qafordevs.entity.Status;
 import com.example.qafordevs.util.DataUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -21,13 +20,13 @@ public class DeveloperRepositoryTests {
     private DeveloperRepository developerRepository;
 
     @BeforeEach
-    public void setUp(){
+    public void setUp() {
         developerRepository.deleteAll();
     }
 
     @Test
     @DisplayName("Test save developer functionality")
-    public void givenDeveloperObject_whenSave_thenDeveloperIsCreated(){
+    public void givenDeveloperObject_whenSave_thenDeveloperIsCreated() {
         //given
         DeveloperEntity developerToSave = DataUtils.getJohnDoeTransient();
         //when
@@ -40,7 +39,7 @@ public class DeveloperRepositoryTests {
 
     @Test
     @DisplayName("Test update developer functionality")
-    public void givenDeveloperToUpdate_whenSave_thenEmailIsChanged(){
+    public void givenDeveloperToUpdate_whenSave_thenEmailIsChanged() {
         //given
         String updatedEmail = "updated@mail.com";
         DeveloperEntity developerToCreate = DataUtils.getJohnDoeTransient();
@@ -57,7 +56,7 @@ public class DeveloperRepositoryTests {
 
     @Test
     @DisplayName("Test get developer by id functionality")
-    public void givenDeveloperCreated_whenGetById_thenDeveloperIsReturned(){
+    public void givenDeveloperCreated_whenGetById_thenDeveloperIsReturned() {
         //given
         DeveloperEntity developerToSave = DataUtils.getJohnDoeTransient();
         developerRepository.save(developerToSave);
@@ -70,7 +69,7 @@ public class DeveloperRepositoryTests {
 
     @Test
     @DisplayName("Test developer not found functionality")
-    public void giveDeveloperIsNotCreated_whenGetById_thenOptionalIsEmpty(){
+    public void giveDeveloperIsNotCreated_whenGetById_thenOptionalIsEmpty() {
         //given
         //when
         DeveloperEntity obtainedDeveloper = developerRepository.findById(1).orElse(null);
@@ -80,7 +79,7 @@ public class DeveloperRepositoryTests {
 
     @Test
     @DisplayName("Test get all developers functionality")
-    public void givenThreeDevelopersAreStored_whenFindAll_thenDevelopersAreReturned(){
+    public void givenThreeDevelopersAreStored_whenFindAll_thenDevelopersAreReturned() {
         //given
         DeveloperEntity developer1 = DataUtils.getJohnDoeTransient();
         DeveloperEntity developer2 = DataUtils.getFrankJonesTransient();
@@ -95,7 +94,7 @@ public class DeveloperRepositoryTests {
 
     @Test
     @DisplayName("Test get developer by email functionality")
-    public void givenDeveloperSaved_whenGetByEmail_thenDeveloperIsReturned(){
+    public void givenDeveloperSaved_whenGetByEmail_thenDeveloperIsReturned() {
         //given
         DeveloperEntity developer = DataUtils.getJohnDoeTransient();
         developerRepository.save(developer);
@@ -108,7 +107,7 @@ public class DeveloperRepositoryTests {
 
     @Test
     @DisplayName("Test get all active developers by specialty functionality")
-    public void givenThreeDevelopersAndTwoAreActive_whenFindAllActiveBySpeciality_thenReturnedOnlyTwo(){
+    public void givenThreeDevelopersAndTwoAreActive_whenFindAllActiveBySpeciality_thenReturnedOnlyTwo() {
         //given
         DeveloperEntity developer1 = DataUtils.getJohnDoeTransient();
         DeveloperEntity developer2 = DataUtils.getFrankJonesTransient();
@@ -124,7 +123,7 @@ public class DeveloperRepositoryTests {
 
     @Test
     @DisplayName("Test delete developer by id functionality")
-    public void givenDevelopersIsSaved_whenDeleteById_thenDeveloperIsRemoveFromBD(){
+    public void givenDevelopersIsSaved_whenDeleteById_thenDeveloperIsRemoveFromBD() {
         //given
         DeveloperEntity developer = DataUtils.getJohnDoeTransient();
         developerRepository.save(developer);

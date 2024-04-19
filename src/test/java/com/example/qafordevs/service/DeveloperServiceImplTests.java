@@ -11,7 +11,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.BDDMockito;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.util.CollectionUtils;
 
@@ -34,7 +33,7 @@ public class DeveloperServiceImplTests {
 
     @Test
     @DisplayName("Test save developer functionality")
-    public void givenDeveloperToSave_whenSaveDeveloper_thenRepositoryIsCalled(){
+    public void givenDeveloperToSave_whenSaveDeveloper_thenRepositoryIsCalled() {
         //given
         DeveloperEntity developerToSave = DataUtils.getJohnDoeTransient();
         BDDMockito.given(developerRepository.findByEmail(anyString()))
@@ -49,21 +48,21 @@ public class DeveloperServiceImplTests {
 
     @Test
     @DisplayName("Test save developer with duplicate email functionality")
-    public void givenDeveloperToSaveWithDuplicatedEmail_whenSaveDeveloper_thenExceptionIsThrown(){
+    public void givenDeveloperToSaveWithDuplicatedEmail_whenSaveDeveloper_thenExceptionIsThrown() {
         //given
         DeveloperEntity developerToSave = DataUtils.getJohnDoeTransient();
         BDDMockito.given(developerRepository.findByEmail(anyString()))
                 .willReturn(DataUtils.getJohnDoeTransient());
         //when
         assertThrows(
-            DeveloperWithDuplicateException.class, () -> serviceUnderTest.saveDeveloper(developerToSave));
+                DeveloperWithDuplicateException.class, () -> serviceUnderTest.saveDeveloper(developerToSave));
         //then
         verify(developerRepository, never()).save(any(DeveloperEntity.class));
     }
 
     @Test
     @DisplayName("Test update developer functionality")
-    public void givenDeveloperToUpdate_whenUpdateDeveloper_thenRepositoryIsCalled(){
+    public void givenDeveloperToUpdate_whenUpdateDeveloper_thenRepositoryIsCalled() {
         //given
         DeveloperEntity developerToUpdate = DataUtils.getJohnDoePersisted();
         BDDMockito.given(developerRepository.existsById(anyInt()))
@@ -79,7 +78,7 @@ public class DeveloperServiceImplTests {
 
     @Test
     @DisplayName("Test update developer with incorrect id functionality")
-    public void givenDeveloperToUpdateIncorrectId_whenUpdateDeveloper_thenExceptionIsThrown(){
+    public void givenDeveloperToUpdateIncorrectId_whenUpdateDeveloper_thenExceptionIsThrown() {
         //given
         DeveloperEntity developerToUpdate = DataUtils.getJohnDoePersisted();
         BDDMockito.given(developerRepository.existsById(anyInt()))
@@ -94,7 +93,7 @@ public class DeveloperServiceImplTests {
 
     @Test
     @DisplayName("Test get developer by id functionality")
-    public void givenId_whenGetById_thenDeveloperIsReturned(){
+    public void givenId_whenGetById_thenDeveloperIsReturned() {
         //given
         BDDMockito.given(developerRepository.findById(anyInt()))
                 .willReturn(Optional.of(DataUtils.getJohnDoePersisted()));
@@ -106,7 +105,7 @@ public class DeveloperServiceImplTests {
 
     @Test
     @DisplayName("Test get developer by id functionality")
-    public void givenIncorrectId_whenGetById_thenExceptionIsThrow(){
+    public void givenIncorrectId_whenGetById_thenExceptionIsThrow() {
         //given
         BDDMockito.given(developerRepository.findById(anyInt()))
                 .willThrow(DeveloperNotFoundException.class);
@@ -117,7 +116,7 @@ public class DeveloperServiceImplTests {
 
     @Test
     @DisplayName("Test get developer by email functionality")
-    public void givenEmail_whenGetDeveloperByEmail_thenDeveloperIsReturned(){
+    public void givenEmail_whenGetDeveloperByEmail_thenDeveloperIsReturned() {
         //given
         String email = "johndoe@mail.com";
         BDDMockito.given(developerRepository.findByEmail(anyString()))
@@ -130,7 +129,7 @@ public class DeveloperServiceImplTests {
 
     @Test
     @DisplayName("Test get developer by email functionality")
-    public void givenIncorrectEmail_whenGetDeveloperByEmail_thenExceptionIsThrow(){
+    public void givenIncorrectEmail_whenGetDeveloperByEmail_thenExceptionIsThrow() {
         //given
         String email = "johndoe@mail.com";
         BDDMockito.given(developerRepository.findByEmail(anyString()))
@@ -142,7 +141,7 @@ public class DeveloperServiceImplTests {
 
     @Test
     @DisplayName("Test get all only active developers functionality")
-    public void givenThreeDevelopers_whenGetAll_thenOnlyActiveAreReturned(){
+    public void givenThreeDevelopers_whenGetAll_thenOnlyActiveAreReturned() {
         //given
         DeveloperEntity developer1 = DataUtils.getJohnDoePersisted();
         DeveloperEntity developer2 = DataUtils.getMikeSmithPersisted();
@@ -161,7 +160,7 @@ public class DeveloperServiceImplTests {
 
     @Test
     @DisplayName("Test get all active by specialty developers functionality")
-    public void givenThreeDeveloperAndTwoActive_whenGetAllActiveBySpeciality_thenDevelopersAreReturned(){
+    public void givenThreeDeveloperAndTwoActive_whenGetAllActiveBySpeciality_thenDevelopersAreReturned() {
         //given
         DeveloperEntity developer1 = DataUtils.getJohnDoePersisted();
         DeveloperEntity developer2 = DataUtils.getMikeSmithPersisted();
@@ -178,7 +177,7 @@ public class DeveloperServiceImplTests {
 
     @Test
     @DisplayName("Test soft delete by id functionality")
-    public void givenId_thenSoftDeleteById_whenRepositorySaveMethodIsCalled(){
+    public void givenId_thenSoftDeleteById_whenRepositorySaveMethodIsCalled() {
         //given
         BDDMockito.given(developerRepository.findById(anyInt()))
                 .willReturn(Optional.of(DataUtils.getJohnDoePersisted()));
@@ -191,7 +190,7 @@ public class DeveloperServiceImplTests {
 
     @Test
     @DisplayName("Test soft delete by id functionality")
-    public void givenIncorrectId_thenSoftDeleteById_whenExceptionIsThrown(){
+    public void givenIncorrectId_thenSoftDeleteById_whenExceptionIsThrown() {
         //given
         BDDMockito.given(developerRepository.findById(anyInt()))
                 .willReturn(Optional.empty());
